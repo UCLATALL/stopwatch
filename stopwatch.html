@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: sans-serif;
+    }
+    .container {
+      width: 500px;
+      height: 200px;
+      margin: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #ccc;
+    }
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .mode-buttons {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .mode-buttons button {
+      font-size: 1.2em;
+      padding: 10px;
+      width: 180px;
+      word-wrap: break-word;
+    }
+    .timer-button {
+      margin-top: 10px;
+      font-size: 2em;
+      padding: 10px 20px;
+      color: white;
+      background-color: green;
+      border: none;
+      border-radius: 4px;
+    }
+    .display-area {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 3em;
+      margin-bottom: 10px;
+      position: relative;
+      width: 400px;
+    }
+    #timer {
+      font-size: 3.5em;
+      margin: 0;
+      position: absolute;
+    }
+    #message {
+      font-size: 1.2em;
+      color: red;
+      max-width: 80%;
+      text-align: center;
+      word-wrap: break-word;
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="content" id="modeSelect">
+      <h2 style="margin: 0 0 20px 0;">Choose Timer Mode</h2>
+      <div class="mode-buttons">
+        <button id="showMode">Show Timer</button>
+        <button id="guessMode">Guess the Time</button>
+      </div>
+    </div>
+
+    <div class="content" id="stopwatch" style="display:none;">
+      <div class="display-area">
+        <div id="timer">00:00:00.0</div>
+        <div id="message" style="display:none;">Click Stop When You Think It Has Been 20 Seconds!</div>
+      </div>
+      <button id="toggle" class="timer-button">Start</button>
+    </div>
+  </div>
+
+  <script>
+    let t = null, startTime = 0, elapsed = 0;
+    let hideWhileRunning = false;
+
+    document.getElementById("showMode").addEventListener("click", function() {
+      hideWhileRunning = false;
+      document.getElementById("modeSelect").style.display = "none";
+      document.getElementById("stopwatch").style.display = "flex";
+    });
+
+    document.getElementById("guessMode").addEventListener("click", function() {
+      hideWhileRunning = true;
+      document.getElementById("modeSelect").style.display = "none";
+      document.getElementById("stopwatch").style.display = "flex";
+    });
+
+    function format(ms) {
+      const totalSeconds = ms / 1000;
+      const s = String(Math.floor(totalSeconds % 60)).padStart(2,"0");
+      const m = String(Math.floor(totalSeconds/60) % 60).padStart(2,"0");
+      const h = String(Math.floor(totalSeconds/3600)).padStart(2,"0");
+      const tenths = String(Math.floor((ms % 1000) / 100));
+      return `${h}:${m}:${s}.${tenths}`;
+    }
+
+    function toggleStartStop() {
+      const btn = document.getElementById("toggle");
+      const timerDisplay = document.getElementById("timer");
+      const msg = document.getElementById("message");
+
+      if (t === null) {
+        // start fresh
+        elapsed = 0;
+        timerDisplay.innerText = "00:00:00.0";
+        timerDisplay.style.display = "block";
+        msg.style.display = "none";
+        startTime = Date.now();
+        t = setInterval(() => {
+          elapsed = Date.now() - startTime;
+          if (!hideWhileRunning) {
+            timerDisplay.innerText = format(elapsed);
+          }
+        }, 50);
+        btn.innerText = "Stop";
+        btn.style.backgroundColor = "red";
+        if (hideWhileRunning) {
+          timerDisplay.style.display = "none";
+          msg.style.display = "block";
+        }
+      } else {
+        // stop
+        clearInterval(t);
+        t = null;
+        btn.innerText = "Start";
+        btn.style.backgroundColor = "green";
+        timerDisplay.style.display = "block";
+        timerDisplay.innerText = format(elapsed);
+        msg.style.display = "none";
+      }
+    }
+
+    document.getElementById("toggle").addEventListener("click", toggleStartStop);
+  </script>
+</body>
+</html>
