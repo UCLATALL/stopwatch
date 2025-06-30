@@ -31,7 +31,7 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
-      margin-top: 20px;
+      margin-top: 10px;
     }
     .mode-buttons button {
       font-size: 1.2em;
@@ -73,16 +73,19 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="content" id="modeSelect">
-      <h2 style="margin: 0 0 20px 0;">Choose Timer Mode</h2>
-      <div class="mode-buttons">
-        <button id="showMode">Show Timer</button>
-        <button id="guessMode">Guess the Time</button>
-      </div>
-    </div>
 
-    <div class="content" id="stopwatch" style="display:none;">
+  <!-- mode chooser outside the flexbox container -->
+  <div id="modeSelect" style="text-align:center; margin-top: 20px;">
+    <h2>Choose Timer Mode</h2>
+    <div class="mode-buttons">
+      <button id="showMode">Show Timer</button>
+      <button id="guessMode">Guess the Time</button>
+    </div>
+  </div>
+
+  <!-- stopwatch in a flex-centered box -->
+  <div class="container" id="stopwatch" style="display:none;">
+    <div class="content">
       <div class="display-area">
         <div id="timer">00:00:00.0</div>
         <div id="message" style="display:none;">Click Stop When You Think It's 20 Seconds!</div>
@@ -94,13 +97,13 @@
   <script>
     let t = null, startTime = 0, elapsed = 0;
     let hideWhileRunning = false;
-    let currentCondition = "timer"; // will update on mode select
+    let currentCondition = "timer";
 
     // teacher-provided class ID
-    const class_id = "teacher@example.com";  // <- CHANGE THIS for each teacher
-    const scriptURL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // <- replace with your script URL
+    const class_id = "teacher@example.com";  // <- change for each teacher
+    const scriptURL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";  // <- replace with your Apps Script web app
 
-    // assign student id once per browser
+    // student id assigned once per browser
     if (!localStorage.getItem("studentId")) {
       const newId = Math.random().toString(36).substring(2,7);
       localStorage.setItem("studentId", newId);
@@ -136,7 +139,7 @@
       const msg = document.getElementById("message");
 
       if (t === null) {
-        // start fresh
+        // start
         elapsed = 0;
         timerDisplay.innerText = "00:00:00.0";
         timerDisplay.style.display = "block";
@@ -163,8 +166,6 @@
         timerDisplay.style.display = "block";
         timerDisplay.innerText = format(elapsed);
         msg.style.display = "none";
-
-        // submit trial data
         submitTrialData();
       }
     }
