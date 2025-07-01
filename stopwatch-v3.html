@@ -96,33 +96,38 @@
     const fakeDisplay = document.getElementById("fake");
 
     if (t === null) {
-      // start fresh
+      // starting
       elapsed = 0;
       timerDisplay.innerText = "00:00:00.0";
-      timerDisplay.style.display = "block";
-      fakeDisplay.style.display = "none";
       startTime = Date.now();
+
       t = setInterval(() => {
         elapsed = Date.now() - startTime;
         if (!hideWhileRunning) {
           timerDisplay.innerText = format(elapsed);
         }
       }, 50);
-      btn.innerText = "Stop";
-      btn.style.backgroundColor = "red";
+
       if (hideWhileRunning) {
         timerDisplay.style.display = "none";
         fakeDisplay.style.display = "block";
         fakeInterval = setInterval(() => {
           fakeDisplay.innerText = randomFakeTime();
         }, 100);
+      } else {
+        timerDisplay.style.display = "block";
+        fakeDisplay.style.display = "none";
       }
+
+      btn.innerText = "Stop";
+      btn.style.backgroundColor = "red";
     } else {
-      // stop
+      // stopping
       clearInterval(t);
       if (fakeInterval) clearInterval(fakeInterval);
-      t = null;
       fakeInterval = null;
+      t = null;
+
       btn.innerText = "Start";
       btn.style.backgroundColor = "green";
       timerDisplay.style.display = "block";
@@ -133,9 +138,9 @@
 
   document.getElementById("toggle").addEventListener("click", toggleStartStop);
 
-  // show 00:00:00.0 at first
-  document.getElementById("timer").style.display = "block";
-  document.getElementById("fake").style.display = "none";
+// on first load:
+document.getElementById("timer").style.display = "block";
+document.getElementById("fake").style.display = "none";
 </script>
 </body>
 </html>
