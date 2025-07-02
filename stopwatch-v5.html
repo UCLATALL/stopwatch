@@ -74,11 +74,9 @@
 
   // generate random session ID on each page load
   const session_id = Math.random().toString(36).substring(2,7);
+  
   // send data to a central google sheet
-  const scriptURL = "https://script.google.com/macros/s/AKfycbyyuNLvDsd9LF0k769g9jZXCQC_cZoZ8rSZY5pTgTVTXEWKNq5BSjXq07gjXlV6O3Xnyw/exec";  // replace with your real URL
-
-  // your Apps Script URL
-  const scriptURL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // replace with yours
+  https://script.google.com/macros/s/AKfycbwni1tfzrtCfTXxhep0JCBBB8KBST7t6paGuF9L0WoXD0H6tyR6pO8HrZNvGzcSe5N0fg/exec
 
   let t = null, startTime = 0, elapsed = 0, fakeInterval = null;
   let hideWhileRunning = (condition === "guess");
