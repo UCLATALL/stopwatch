@@ -71,6 +71,7 @@
   const params = new URLSearchParams(window.location.search);
   const condition = params.get("condition") || "timer";
   const class_id = params.get("class_id") || "anonymous";
+  const user_id = params.get("user_id") || "anonymous";
 
   // generate random session ID on each page load
   const session_id = Math.random().toString(36).substring(2,7);
@@ -156,6 +157,7 @@
   function submitTrial() {
     const payload = new URLSearchParams();
     payload.append("class_id", class_id);
+    payload.append("user_id", user_id);
     payload.append("session_id", session_id);
     payload.append("date", new Date().toISOString());
     payload.append("condition", condition);
