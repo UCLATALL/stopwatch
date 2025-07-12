@@ -11,12 +11,11 @@
     }
     .container {
       width: 500px;
-      height: 250px;
+      height: 200px;
       margin: auto;
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
       border: 1px solid #ccc;
     }
     .content {
@@ -54,11 +53,6 @@
       position: absolute;
       display: none;
     }
-    #trialDisplay {
-      margin-top: 10px;
-      font-weight: bold;
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -69,7 +63,6 @@
         <div id="fake">--:--:--.-</div>
       </div>
       <button id="toggle" class="timer-button">Start</button>
-      <div id="trialDisplay"></div>
     </div>
   </div>
 
@@ -78,9 +71,9 @@
   const condition = params.get("condition") || "timer";
   const class_id = params.get("class_id") || "anonymous";
   const user_id = params.get("user_id") || "anonymous";
-  const trialsLimit = parseInt(params.get("trials"));
-
+  const trials = parseInt(params.get("trials"));
   const session_id = Math.random().toString(36).substring(2,7);
+
   const scriptURL = "https://script.google.com/macros/s/AKfycbwWLSMrRXgf3p6BHzEWVF0dKCCcIXhWY9N4sjW-eP-TsvHOPiNgA78RDFkX_o8CyXH6nA/exec";
 
   let t = null, startTime = 0, elapsed = 0, fakeInterval = null;
@@ -89,6 +82,16 @@
 
   document.getElementById("timer").style.display = "block";
   document.getElementById("fake").style.display = "none";
+
+  if (!isNaN(trials)) {
+    const trialDiv = document.createElement("div");
+    trialDiv.id = "trial-info";
+    trialDiv.style.marginTop = "10px";
+    trialDiv.style.fontSize = "1.1em";
+    trialDiv.style.textAlign = "center";
+    trialDiv.innerText = `You have completed 0/${trials} trials`;
+    document.querySelector(".content").appendChild(trialDiv);
+  }
 
   function format(ms) {
     const totalSeconds = ms / 1000;
@@ -152,19 +155,13 @@
       timerDisplay.style.display = "block";
       fakeDisplay.style.display = "none";
 
-      trialCount++;
-
-      if (!isNaN(trialsLimit)) {
-        const display = document.getElementById("trialDisplay");
-        display.innerText = `You have completed ${trialCount}/${trialsLimit} trials`;
-        display.style.display = "block";
-      }
-
       submitTrial();
     }
   }
 
   function submitTrial() {
+    trialCount += 1;
+
     const payload = new URLSearchParams();
     payload.append("class_id", class_id);
     payload.append("user_id", user_id);
@@ -178,8 +175,12 @@
       method: "POST",
       body: payload
     })
-    .then(response => console.log("submitted"))
-    .catch(error => console.error("error submitting", error));
+    .then(() => {
+      if (!isNaN(trials)) {
+        document.getElementById("trial-info").innerText = `You have completed ${trialCount}/${trials} trials`;
+      }
+    })
+    .catch(err => console.error("Submission error:", err));
   }
 
   document.getElementById("toggle").addEventListener("click", toggleStartStop);
