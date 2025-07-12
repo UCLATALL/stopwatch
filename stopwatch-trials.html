@@ -8,37 +8,68 @@
       width: 100%;
       height: 100%;
       font-family: sans-serif;
+    }
+    .container {
+      width: 500px;
+      height: 200px;
+      margin: auto;
       display: flex;
       justify-content: center;
       align-items: center;
+      border: none; /* removed border */
+      background: white; /* for iframe background */
     }
-    .container {
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       text-align: center;
     }
-    .display-area {
-      font-size: 3em;
-      margin-bottom: 10px;
-    }
     .timer-button {
+      margin-top: 10px;
       font-size: 2em;
       padding: 10px 20px;
       color: white;
       background-color: green;
       border: none;
-      border-radius: 6px;
-      cursor: pointer;
+      border-radius: 4px;
     }
-    .trial-status {
-      margin-top: 15px;
-      font-size: 1.2em;
+    .display-area {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 3em;
+      margin-bottom: 10px;
+      position: relative;
+      width: 400px;
+    }
+    #timer {
+      font-size: 3.5em;
+      position: absolute;
+    }
+    #fake {
+      font-size: 3.5em;
+      color: #888;
+      position: absolute;
+      display: none;
+    }
+    #trialInfo {
+      font-size: 1em;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div id="timer" class="display-area">00:00:00.0</div>
-    <button id="toggle" class="timer-button">Start</button>
-    <div id="trialStatus" class="trial-status" style="display: none"></div>
+    <div class="content">
+      <div class="display-area">
+        <div id="timer">00:00:00.0</div>
+        <div id="fake">--:--:--.-</div>
+      </div>
+      <button id="toggle" class="timer-button">Start</button>
+      <div id="trialInfo" style="display: none;"></div>
+    </div>
   </div>
 
 <script>
@@ -46,18 +77,34 @@
   const condition = params.get("condition") || "timer";
   const class_id = params.get("class_id") || "anonymous";
   const user_id = params.get("user_id") || "anonymous";
-  const trials_limit = parseInt(params.get("trials"));
-  const session_id = Math.random().toString(36).substring(2, 7);
+  const trialsParam = params.get("trials");
+
+  // Generate session ID on load
+  const session_id = Math.random().toString(36).substring(2,7);
+  const key = `trial_count_${user_id}_${session_id}`;
+
+  let trialLimit = trialsParam ? parseInt(trialsParam, 10) : null;
+  let t = null, startTime = 0, elapsed = 0, fakeInterval = null;
+  let hideWhileRunning = (condition === "guess");
 
   const scriptURL = "https://script.google.com/macros/s/AKfycbwWLSMrRXgf3p6BHzEWVF0dKCCcIXhWY9N4sjW-eP-TsvHOPiNgA78RDFkX_o8CyXH6nA/exec";
 
-  let t = null, startTime = 0, elapsed = 0;
-  let trialCount = 0;
-  let disableFurtherTrials = false;
-
   const timerDisplay = document.getElementById("timer");
-  const button = document.getElementById("toggle");
-  const trialStatus = document.getElementById("trialStatus");
+  const fakeDisplay = document.getElementById("fake");
+  const toggleBtn = document.getElementById("toggle");
+  const trialDisplay = document.getElementById("trialInfo");
+
+  function getTrialCount() {
+    const count = localStorage.getItem(key);
+    return count ? parseInt(count, 10) : 0;
+  }
+
+  function incrementTrialCount() {
+    const current = getTrialCount();
+    const next = current + 1;
+    localStorage.setItem(key, next);
+    return next;
+  }
 
   function format(ms) {
     const totalSeconds = ms / 1000;
@@ -68,67 +115,95 @@
     return `${h}:${m}:${s}.${tenths}`;
   }
 
-  function updateTrialStatus() {
-    if (!isNaN(trials_limit)) {
-      trialStatus.innerText = `You have completed ${trialCount}/${trials_limit} trials`;
-      trialStatus.style.display = "block";
-    }
+  function randomFakeTime() {
+    const h = String(Math.floor(Math.random()*3)).padStart(2,"0");
+    const m = String(Math.floor(Math.random()*60)).padStart(2,"0");
+    const s = String(Math.floor(Math.random()*60)).padStart(2,"0");
+    const tenths = String(Math.floor(Math.random()*10));
+    return `${h}:${m}:${s}.${tenths}`;
   }
 
   function toggleStartStop() {
-    if (disableFurtherTrials) return;
+    if (trialLimit && getTrialCount() >= trialLimit) return;
 
     if (t === null) {
       elapsed = 0;
       timerDisplay.innerText = "00:00:00.0";
       startTime = Date.now();
+
+      if (hideWhileRunning) {
+        timerDisplay.style.display = "none";
+        fakeDisplay.style.display = "block";
+        fakeInterval = setInterval(() => {
+          fakeDisplay.innerText = randomFakeTime();
+        }, 100);
+      } else {
+        timerDisplay.style.display = "block";
+        fakeDisplay.style.display = "none";
+      }
+
       t = setInterval(() => {
         elapsed = Date.now() - startTime;
-        timerDisplay.innerText = format(elapsed);
+        if (!hideWhileRunning) {
+          timerDisplay.innerText = format(elapsed);
+        }
       }, 50);
-      button.innerText = "Stop";
-      button.style.backgroundColor = "red";
+
+      toggleBtn.innerText = "Stop";
+      toggleBtn.style.backgroundColor = "red";
+
     } else {
       clearInterval(t);
+      if (fakeInterval) clearInterval(fakeInterval);
       t = null;
+
+      toggleBtn.innerText = "Start";
+      toggleBtn.style.backgroundColor = "green";
       timerDisplay.innerText = format(elapsed);
-      button.innerText = "Start";
-      button.style.backgroundColor = "green";
-      trialCount++;
-      updateTrialStatus();
+      timerDisplay.style.display = "block";
+      fakeDisplay.style.display = "none";
+
       submitTrial();
-      if (!isNaN(trials_limit) && trialCount >= trials_limit) {
-        disableFurtherTrials = true;
-        button.disabled = true;
-        button.innerText = "Limit Reached";
-        button.style.backgroundColor = "#999";
-      }
     }
   }
 
   function submitTrial() {
+    const currentTrial = incrementTrialCount();
     const payload = new URLSearchParams();
-    payload.append("trial", trialCount);
     payload.append("class_id", class_id);
     payload.append("user_id", user_id);
     payload.append("session_id", session_id);
     payload.append("date", new Date().toISOString());
     payload.append("condition", condition);
-    payload.append("time_sec", (elapsed/1000).toFixed(1));
+    payload.append("trial", currentTrial);
+    payload.append("time_sec", (elapsed / 1000).toFixed(1));
 
     fetch(scriptURL, {
       method: "POST",
       body: payload
     })
-    .then(() => console.log("Submitted trial", trialCount))
-    .catch(err => console.error("Error submitting", err));
+    .then(() => {
+      if (trialLimit) {
+        trialDisplay.innerText = `You have completed ${currentTrial}/${trialLimit} trials`;
+        trialDisplay.style.display = "block";
+        if (currentTrial >= trialLimit) {
+          toggleBtn.disabled = true;
+          toggleBtn.innerText = "Done";
+          toggleBtn.style.backgroundColor = "#999";
+        }
+      } else {
+        trialDisplay.style.display = "none";
+      }
+    })
+    .catch(err => console.error("submission failed", err));
   }
 
-  button.addEventListener("click", toggleStartStop);
-
-  if (!isNaN(trials_limit)) {
-    updateTrialStatus();
+  if (trialLimit) {
+    trialDisplay.innerText = `You have completed ${getTrialCount()}/${trialLimit} trials`;
+    trialDisplay.style.display = "block";
   }
+
+  document.getElementById("toggle").addEventListener("click", toggleStartStop);
 </script>
 </body>
 </html>
