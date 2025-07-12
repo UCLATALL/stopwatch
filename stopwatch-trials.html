@@ -11,12 +11,13 @@
     }
     .container {
       width: 500px;
-      height: 200px;
+      height: 250px;
       margin: auto;
       display: flex;
       justify-content: center;
       align-items: center;
-      border: none;
+      flex-direction: column;
+      border: 1px solid #ccc;
     }
     .content {
       display: flex;
@@ -53,9 +54,10 @@
       position: absolute;
       display: none;
     }
-    #trial-display {
+    #trialDisplay {
       margin-top: 10px;
       font-weight: bold;
+      display: none;
     }
   </style>
 </head>
@@ -67,7 +69,7 @@
         <div id="fake">--:--:--.-</div>
       </div>
       <button id="toggle" class="timer-button">Start</button>
-      <div id="trial-display">Trial = 0</div>
+      <div id="trialDisplay"></div>
     </div>
   </div>
 
@@ -85,14 +87,8 @@
   let hideWhileRunning = (condition === "guess");
   let trialCount = 0;
 
-  const timerDisplay = document.getElementById("timer");
-  const fakeDisplay = document.getElementById("fake");
-  const btn = document.getElementById("toggle");
-  const trialDisplay = document.getElementById("trial-display");
-
-  function updateTrialDisplay() {
-    trialDisplay.innerText = `Trial = ${trialCount}`;
-  }
+  document.getElementById("timer").style.display = "block";
+  document.getElementById("fake").style.display = "none";
 
   function format(ms) {
     const totalSeconds = ms / 1000;
@@ -112,13 +108,11 @@
   }
 
   function toggleStartStop() {
-    if (t === null) {
-      if (!isNaN(trialsLimit) && trialCount >= trialsLimit) {
-        alert("Trial limit reached.");
-        return;
-      }
+    const btn = document.getElementById("toggle");
+    const timerDisplay = document.getElementById("timer");
+    const fakeDisplay = document.getElementById("fake");
 
-      // START
+    if (t === null) {
       elapsed = 0;
       timerDisplay.innerText = "00:00:00.0";
       startTime = Date.now();
@@ -145,7 +139,6 @@
       btn.style.backgroundColor = "red";
 
     } else {
-      // STOP
       clearInterval(t);
       if (fakeInterval) {
         clearInterval(fakeInterval);
@@ -160,7 +153,12 @@
       fakeDisplay.style.display = "none";
 
       trialCount++;
-      updateTrialDisplay();
+
+      if (!isNaN(trialsLimit)) {
+        const display = document.getElementById("trialDisplay");
+        display.innerText = `You have completed ${trialCount}/${trialsLimit} trials`;
+        display.style.display = "block";
+      }
 
       submitTrial();
     }
@@ -184,7 +182,6 @@
     .catch(error => console.error("error submitting", error));
   }
 
-  updateTrialDisplay();
   document.getElementById("toggle").addEventListener("click", toggleStartStop);
 </script>
 </body>
