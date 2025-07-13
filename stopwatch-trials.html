@@ -87,10 +87,16 @@
     const trialDisplay = document.getElementById("trialDisplay");
 
     function updateTrialDisplay() {
-      if (!isNaN(trialsLimit)) {
-        trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials`;
-      } else {
-        trialDisplay.innerText = "";
+      const trialCountDisplay = document.getElementById("trialCount");
+      if (trialLimit !== null) {
+      trialCountDisplay.innerText = `You have completed ${trialCount}/${trialLimit} trials.`;
+
+        if (trialCount >= trialLimit) {
+          const btn = document.getElementById("toggle");
+          btn.disabled = true;
+          btn.innerText = "Done";
+          btn.style.backgroundColor = "#888";
+        }
       }
     }
 
