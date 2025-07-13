@@ -76,7 +76,7 @@
     const class_id = params.get("class_id") || "anonymous";
     const user_id = params.get("user_id") || "anonymous";
     const trialsLimit = parseInt(params.get("trials"));
-    const session_id = Math.random().toString(36).substring(2,7);
+    const session_id = Math.random().toString(36).substring(2, 7);
 
     const scriptURL = "https://script.google.com/macros/s/AKfycbwWLSMrRXgf3p6BHzEWVF0dKCCcIXhWY9N4sjW-eP-TsvHOPiNgA78RDFkX_o8CyXH6nA/exec";
 
@@ -88,8 +88,7 @@
 
     function updateTrialDisplay() {
       if (!isNaN(trialsLimit)) {
-      trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials.`;
-
+        trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials.`;
         if (trial >= trialsLimit) {
           const btn = document.getElementById("toggle");
           btn.disabled = true;
@@ -97,25 +96,24 @@
           btn.style.backgroundColor = "#888";
         }
       } else {
-    // If no limit is set, don't show anything
-    trialDisplay.innerText = "";
+        trialDisplay.innerText = "";
       }
     }
 
     function format(ms) {
       const totalSeconds = ms / 1000;
-      const s = String(Math.floor(totalSeconds % 60)).padStart(2,"0");
-      const m = String(Math.floor(totalSeconds/60) % 60).padStart(2,"0");
-      const h = String(Math.floor(totalSeconds/3600)).padStart(2,"0");
+      const s = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
+      const m = String(Math.floor(totalSeconds / 60) % 60).padStart(2, "0");
+      const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
       const tenths = String(Math.floor((ms % 1000) / 100));
       return `${h}:${m}:${s}.${tenths}`;
     }
 
     function randomFakeTime() {
-      const h = String(Math.floor(Math.random()*3)).padStart(2,"0");
-      const m = String(Math.floor(Math.random()*60)).padStart(2,"0");
-      const s = String(Math.floor(Math.random()*60)).padStart(2,"0");
-      const tenths = String(Math.floor(Math.random()*10));
+      const h = String(Math.floor(Math.random() * 3)).padStart(2, "0");
+      const m = String(Math.floor(Math.random() * 60)).padStart(2, "0");
+      const s = String(Math.floor(Math.random() * 60)).padStart(2, "0");
+      const tenths = String(Math.floor(Math.random() * 10));
       return `${h}:${m}:${s}.${tenths}`;
     }
 
@@ -177,11 +175,13 @@
       payload.append("class_id", class_id);
       payload.append("user_id", user_id);
       payload.append("session_id", session_id);
-      const now = new Date();
-      const localDateTime = now.toLocaleString("sv-SE"); // ISO-like but local time
-      payload.append("date", localDateTime);
+
+      // Save timestamp in UTC ISO 8601 format
+      const nowUTC = new Date().toISOString(); // already in UTC
+      payload.append("date", nowUTC);
+
       payload.append("condition", condition);
-      payload.append("time_sec", (elapsed/1000).toFixed(1));
+      payload.append("time_sec", (elapsed / 1000).toFixed(1));
       payload.append("trial", trial);
 
       fetch(scriptURL, {
