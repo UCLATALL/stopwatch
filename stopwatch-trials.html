@@ -177,7 +177,9 @@
       payload.append("class_id", class_id);
       payload.append("user_id", user_id);
       payload.append("session_id", session_id);
-      payload.append("date", new Date().toISOString());
+      const now = new Date();
+      const localDateTime = now.toLocaleString("sv-SE"); // ISO-like but local time
+      payload.append("date", localDateTime);
       payload.append("condition", condition);
       payload.append("time_sec", (elapsed/1000).toFixed(1));
       payload.append("trial", trial);
