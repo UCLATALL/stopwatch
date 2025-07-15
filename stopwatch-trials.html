@@ -76,6 +76,7 @@
     const class_id = params.get("class_id") || "anonymous";
     const user_id = params.get("user_id") || "anonymous";
     const trialsLimit = parseInt(params.get("trials"));
+    const timesHidden = params.get("times") === "hide";
     const session_id = Math.random().toString(36).substring(2, 7);
 
     const scriptURL = "https://script.google.com/macros/s/AKfycbwWLSMrRXgf3p6BHzEWVF0dKCCcIXhWY9N4sjW-eP-TsvHOPiNgA78RDFkX_o8CyXH6nA/exec";
@@ -160,7 +161,13 @@
 
         btn.innerText = "Start";
         btn.style.backgroundColor = "green";
-        timerDisplay.innerText = format(elapsed);
+
+        if (timesHidden) {
+          timerDisplay.innerText = "00:00:00.0";
+        } else {
+          timerDisplay.innerText = format(elapsed);
+        }
+
         timerDisplay.style.display = "block";
         fakeDisplay.style.display = "none";
 
@@ -175,11 +182,7 @@
       payload.append("class_id", class_id);
       payload.append("user_id", user_id);
       payload.append("session_id", session_id);
-
-      // Save timestamp in UTC ISO 8601 format
-      const nowUTC = new Date().toISOString(); // already in UTC
-      payload.append("date", nowUTC);
-
+      payload.append("date", new Date().toISOString());
       payload.append("condition", condition);
       payload.append("time_sec", (elapsed / 1000).toFixed(1));
       payload.append("trial", trial);
