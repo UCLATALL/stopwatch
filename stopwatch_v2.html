@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: sans-serif;
+    }
+    .container {
+      width: 500px;
+      height: 200px;
+      margin: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: none;
+      background-color: white;
+    }
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .timer-button {
+      margin-top: 10px;
+      font-size: 2em;
+      padding: 10px 20px;
+      color: white;
+      background-color: green;
+      border: none;
+      border-radius: 4px;
+    }
+    .display-area {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 3em;
+      margin-bottom: 10px;
+      position: relative;
+      width: 400px;
+    }
+    #timer, #fake {
+      font-size: 3.5em;
+      position: absolute;
+    }
+    #fake {
+      color: #888;
+      display: none;
+    }
+    #trialDisplay {
+      margin-top: 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="content">
+      <div class="display-area">
+        <div id="timer">00:00:00.0</div>
+        <div id="fake">--:--:--.-</div>
+      </div>
+      <button id="toggle" class="timer-button">Start</button>
+      <div id="trialDisplay"></div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const condition = params.get("condition") || "timer";
+    const class_id = params.get("class_id") || "anonymous";
+    const user_id = params.get("user_id") || "anonymous";
+    const trialsLimit = parseInt(params.get("trials"));
+    const hideWhileRunning = params.get("progress") === "hide";
+    const hideResult = params.get("result") === "hide";
+    const session_id = Math.random().toString(36).substring(2, 7);
+
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwWLSMrRXgf3p6BHzEWVF0dKCCcIXhWY9N4sjW-eP-TsvHOPiNgA78RDFkX_o8CyXH6nA/exec";
+
+    let t = null, startTime = 0, elapsed = 0, fakeInterval = null;
+    let trial = 0;
+
+    const trialDisplay = document.getElementById("trialDisplay");
+
+    function updateTrialDisplay() {
+      if (!isNaN(trialsLimit)) {
+        trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials.`;
+        if (trial >= trialsLimit) {
+          const btn = document.getElementById("toggle");
+          btn.disabled = true;
+          btn.innerText = "Done";
+          btn.style.backgroundColor = "#888";
+        }
+      } else {
+        trialDisplay.innerText = "";
+      }
+    }
+
+    function format(ms) {
+      const totalSeconds = ms / 1000;
+      const s = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
+      const m = String(Math.floor(totalSeconds / 60) % 60).padStart(2, "0");
+      const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      const tenths = String(Math.floor((ms % 1000) / 100));
+      return `${h}:${m}:${s}.${tenths}`;
+    }
+
+    function randomFakeTime() {
+      const h = String(Math.floor(Math.random() * 3)).padStart(2, "0");
+      const m = String(Math.floor(Math.random() * 60)).padStart(2, "0");
+      const s = String(Math.floor(Math.random() * 60)).padStart(2, "0");
+      const tenths = String(Math.floor(Math.random() * 10));
+      return `${h}:${m}:${s}.${tenths}`;
+    }
+
+    function toggleStartStop() {
+      if (!isNaN(trialsLimit) && trial >= trialsLimit) return;
+
+      const btn = document.getElementById("toggle");
+      const timerDisplay = document.getElementById("timer");
+      const fakeDisplay = document.getElementById("fake");
+
+      if (t === null) {
+        elapsed = 0;
+        timerDisplay.innerText = "00:00:00.0";
+        startTime = Date.now();
+
+        if (hideWhileRunning) {
+          timerDisplay.style.display = "none";
+          fakeDisplay.style.display = "block";
+          fakeInterval = setInterval(() => {
+            fakeDisplay.innerText = randomFakeTime();
+          }, 100);
+        } else {
+          timerDisplay.style.display = "block";
+          fakeDisplay.style.display = "none";
+        }
+
+        t = setInterval(() => {
+          elapsed = Date.now() - startTime;
+          if (!hideWhileRunning) {
+            timerDisplay.innerText = format(elapsed);
+          }
+        }, 50);
+
+        btn.innerText = "Stop";
+        btn.style.backgroundColor = "red";
+
+      } else {
+        clearInterval(t);
+        if (fakeInterval) {
+          clearInterval(fakeInterval);
+          fakeInterval = null;
+        }
+        t = null;
+
+        btn.innerText = "Start";
+        btn.style.backgroundColor = "green";
+
+        timerDisplay.innerText = hideResult ? "00:00:00.0" : format(elapsed);
+        timerDisplay.style.display = "block";
+        fakeDisplay.style.display = "none";
+
+        trial += 1;
+        updateTrialDisplay();
+        submitTrial();
+      }
+    }
+
+    function submitTrial() {
+      const payload = new URLSearchParams();
+      payload.append("class_id", class_id);
+      payload.append("user_id", user_id);
+      payload.append("session_id", session_id);
+      payload.append("date", new Date().toISOString());
+      payload.append("condition", condition);
+      payload.append("time_sec", (elapsed / 1000).toFixed(1));
+      payload.append("trial", trial);
+
+      fetch(scriptURL, {
+        method: "POST",
+        body: payload
+      })
+      .then(() => console.log("submitted"))
+      .catch(err => console.error("submit error", err));
+    }
+
+    document.getElementById("toggle").addEventListener("click", toggleStartStop);
+    updateTrialDisplay();
+  </script>
+</body>
+</html>
