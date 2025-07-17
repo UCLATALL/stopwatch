@@ -89,8 +89,10 @@
     const trialDisplay = document.getElementById("trialDisplay");
 
     function updateTrialDisplay() {
-      if (!progressHidden && !isNaN(trialsLimit)) {
-        trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials.`;
+      if (!isNaN(trialsLimit)) {
+        if (!progressHidden) {
+          trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials.`;
+        }
         if (trial >= trialsLimit) {
           const btn = document.getElementById("toggle");
           btn.disabled = true;
@@ -163,12 +165,7 @@
         btn.innerText = "Start";
         btn.style.backgroundColor = "green";
 
-        if (resultHidden) {
-          timerDisplay.innerText = "00:00:00.0";
-        } else {
-          timerDisplay.innerText = format(elapsed);
-        }
-
+        timerDisplay.innerText = resultHidden ? "00:00:00.0" : format(elapsed);
         timerDisplay.style.display = "block";
         fakeDisplay.style.display = "none";
 
