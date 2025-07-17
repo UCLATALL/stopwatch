@@ -91,8 +91,6 @@
     function updateTrialDisplay() {
       if (!isNaN(trialsLimit)) {
         trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials.`;
-        trialDisplay.style.visibility = progressHidden ? "hidden" : "visible";
-
         if (trial >= trialsLimit) {
           const btn = document.getElementById("toggle");
           btn.disabled = true;
@@ -101,7 +99,6 @@
         }
       } else {
         trialDisplay.innerText = "";
-        trialDisplay.style.visibility = "hidden";
       }
     }
 
@@ -109,7 +106,7 @@
       const totalSeconds = ms / 1000;
       const s = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
       const m = String(Math.floor(totalSeconds / 60) % 60).padStart(2, "0");
-      const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      const h = String(Math.floor(totalSeconds / 3600) % 60).padStart(2, "0");
       const tenths = String(Math.floor((ms % 1000) / 100));
       return `${h}:${m}:${s}.${tenths}`;
     }
