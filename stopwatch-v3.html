@@ -10,15 +10,23 @@
     }
 
     .container {
+      width: 500px;
+      height: 200px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      text-align: center;
+    }
+
+    .main-content {
       display: flex;
       flex-direction: column;
       justify-content: space-evenly;
       align-items: center;
-      width: 500px;
-      height: 200px;
-      margin: auto;
-      background-color: white;
-      text-align: center;
+      flex: 1;
     }
 
     .display-area {
@@ -50,22 +58,21 @@
     }
 
     #trialDisplay {
+      margin-top: 10px;
       font-weight: bold;
-    }
-
-    .spacer {
-      height: 1.5em;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="display-area">
-      <div id="timer">00:00:00.0</div>
-      <div id="fake">--:--:--.-</div>
+    <div class="main-content">
+      <div class="display-area">
+        <div id="timer">00:00:00.0</div>
+        <div id="fake">--:--:--.-</div>
+      </div>
+      <button id="toggle" class="timer-button">Start</button>
     </div>
-    <button id="toggle" class="timer-button">Start</button>
-    <div id="trialDisplay" class="spacer"></div>
+    <div id="trialDisplay"></div>
   </div>
 
   <script>
@@ -90,7 +97,7 @@
       if (!isNaN(trialsLimit)) {
         trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials.`;
       } else {
-        trialDisplay.innerHTML = "&nbsp;";
+        trialDisplay.innerText = "";
       }
     }
 
