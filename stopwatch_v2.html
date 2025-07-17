@@ -90,9 +90,9 @@
 
     function updateTrialDisplay() {
       if (!isNaN(trialsLimit)) {
-        if (!progressHidden) {
-          trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials.`;
-        }
+        trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials.`;
+        trialDisplay.style.visibility = progressHidden ? "hidden" : "visible";
+
         if (trial >= trialsLimit) {
           const btn = document.getElementById("toggle");
           btn.disabled = true;
@@ -101,6 +101,7 @@
         }
       } else {
         trialDisplay.innerText = "";
+        trialDisplay.style.visibility = "hidden";
       }
     }
 
@@ -165,7 +166,12 @@
         btn.innerText = "Start";
         btn.style.backgroundColor = "green";
 
-        timerDisplay.innerText = resultHidden ? "00:00:00.0" : format(elapsed);
+        if (resultHidden) {
+          timerDisplay.innerText = "00:00:00.0";
+        } else {
+          timerDisplay.innerText = format(elapsed);
+        }
+
         timerDisplay.style.display = "block";
         fakeDisplay.style.display = "none";
 
