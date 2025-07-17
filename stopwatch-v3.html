@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
+  <title>Stopwatch</title>
   <style>
     html, body {
-      height: 100%;
       margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
       font-family: sans-serif;
     }
 
@@ -13,19 +17,28 @@
       justify-content: center;
       align-items: center;
       height: 100%;
+      width: 100%;
     }
 
-    .layout-with-trials, .layout-no-trials {
+    .content {
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      justify-content: space-evenly;
       height: 100%;
+      width: 500px;
+      padding: 20px 0;
+      box-sizing: border-box;
+      gap: 20px;
     }
 
     .display-area {
-      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       height: 3em;
+      width: 100%;
+      position: relative;
     }
 
     #timer, #fake {
@@ -41,37 +54,29 @@
     .timer-button {
       font-size: 2em;
       padding: 10px 20px;
-      color: white;
       background-color: green;
+      color: white;
       border: none;
       border-radius: 8px;
+      cursor: pointer;
     }
 
     #trialDisplay {
       font-weight: bold;
-    }
-
-    .hidden {
-      display: none;
+      text-align: center;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div id="layout-with-trials" class="layout-with-trials hidden">
+    <div class="content">
       <div class="display-area">
         <div id="timer">00:00:00.0</div>
         <div id="fake">--:--:--.-</div>
       </div>
       <button id="toggle" class="timer-button">Start</button>
       <div id="trialDisplay"></div>
-    </div>
-    <div id="layout-no-trials" class="layout-no-trials hidden">
-      <div class="display-area">
-        <div id="timer2">00:00:00.0</div>
-        <div id="fake2">--:--:--.-</div>
-      </div>
-      <button id="toggle2" class="timer-button">Start</button>
     </div>
   </div>
 
@@ -86,33 +91,27 @@
     const saveData = params.get("save_data") !== "false";
     const session_id = Math.random().toString(36).substring(2, 7);
 
-    const useTrialLayout = !isNaN(trialsLimit);
     const scriptURL = "https://script.google.com/macros/s/AKfycbwWLSMrRXgf3p6BHzEWVF0dKCCcIXhWY9N4sjW-eP-TsvHOPiNgA78RDFkX_o8CyXH6nA/exec";
-
-    const trialDisplay = document.getElementById("trialDisplay");
-    const layoutWithTrials = document.getElementById("layout-with-trials");
-    const layoutNoTrials = document.getElementById("layout-no-trials");
-
-    if (useTrialLayout) {
-      layoutWithTrials.classList.remove("hidden");
-    } else {
-      layoutNoTrials.classList.remove("hidden");
-    }
 
     let t = null, startTime = 0, elapsed = 0, fakeInterval = null;
     let trial = 0;
 
+    const timerDisplay = document.getElementById("timer");
+    const fakeDisplay = document.getElementById("fake");
+    const trialDisplay = document.getElementById("trialDisplay");
+    const btn = document.getElementById("toggle");
+
     function updateTrialDisplay() {
-      if (!progressHidden && !isNaN(trialsLimit)) {
+      if (!isNaN(trialsLimit)) {
         trialDisplay.innerText = `You have completed ${trial}/${trialsLimit} trials.`;
+        trialDisplay.style.display = "block";
         if (trial >= trialsLimit) {
-          const btn = document.getElementById("toggle");
           btn.disabled = true;
           btn.innerText = "Done";
           btn.style.backgroundColor = "#888";
         }
       } else {
-        trialDisplay.innerText = "";
+        trialDisplay.style.display = "none";
       }
     }
 
@@ -133,7 +132,7 @@
       return `${h}:${m}:${s}.${tenths}`;
     }
 
-    function toggle(button, timerDisplay, fakeDisplay) {
+    function toggleStartStop() {
       if (!isNaN(trialsLimit) && trial >= trialsLimit) return;
 
       if (t === null) {
@@ -159,20 +158,27 @@
           }
         }, 50);
 
-        button.innerText = "Stop";
-        button.style.backgroundColor = "red";
+        btn.innerText = "Stop";
+        btn.style.backgroundColor = "red";
       } else {
         clearInterval(t);
-        if (fakeInterval) clearInterval(fakeInterval);
+        if (fakeInterval) {
+          clearInterval(fakeInterval);
+          fakeInterval = null;
+        }
         t = null;
-        fakeInterval = null;
 
-        button.innerText = "Start";
-        button.style.backgroundColor = "green";
+        btn.innerText = "Start";
+        btn.style.backgroundColor = "green";
+
+        if (resultHidden) {
+          timerDisplay.innerText = "00:00:00.0";
+        } else {
+          timerDisplay.innerText = format(elapsed);
+        }
 
         timerDisplay.style.display = "block";
         fakeDisplay.style.display = "none";
-        timerDisplay.innerText = resultHidden ? "00:00:00.0" : format(elapsed);
 
         trial += 1;
         updateTrialDisplay();
@@ -193,21 +199,12 @@
       fetch(scriptURL, {
         method: "POST",
         body: payload
-      })
-      .then(() => console.log("submitted"))
-      .catch(err => console.error("submit error", err));
+      }).then(() => console.log("submitted"))
+        .catch(err => console.error("submit error", err));
     }
 
-    if (useTrialLayout) {
-      document.getElementById("toggle").addEventListener("click", () =>
-        toggle(document.getElementById("toggle"), document.getElementById("timer"), document.getElementById("fake"))
-      );
-      updateTrialDisplay();
-    } else {
-      document.getElementById("toggle2").addEventListener("click", () =>
-        toggle(document.getElementById("toggle2"), document.getElementById("timer2"), document.getElementById("fake2"))
-      );
-    }
+    btn.addEventListener("click", toggleStartStop);
+    updateTrialDisplay();
   </script>
 </body>
 </html>
