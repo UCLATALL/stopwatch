@@ -1,0 +1,24 @@
+library(IRdisplay)
+
+display_html('
+<table border="1" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 18px;">
+  <tr style="background-color: white;">
+    <th style="padding: 8px; text-align: center;">
+      <span style="background-color: #f0f0f0; padding: 4px 8px; border-radius: 4px;">feedback</span>
+    </th>
+    <th style="padding: 8px; text-align: center;">
+      <span style="background-color: #f0f0f0; padding: 4px 8px; border-radius: 4px;">no_feedback</span>
+    </th>
+  </tr>
+  <tr>
+    <td style="padding: 10px;">
+      <iframe src="https://uclatall.github.io/stopwatch/stopwatch-v3.html?condition=feedback&save_data=false&trials=5&progress=hide" 
+              width="450" height="210" sandbox="allow-scripts allow-same-origin" style="border: none;"></iframe>
+    </td>
+    <td style="padding: 10px;">
+      <iframe src="https://uclatall.github.io/stopwatch/stopwatch-v3.html?condition=no_feedback&save_data=false&trials=5&progress=hide" 
+              width="450" height="210" sandbox="allow-scripts allow-same-origin" style="border: none;"></iframe>
+    </td>
+  </tr>
+</table>
+')
