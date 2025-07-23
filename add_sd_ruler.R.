@@ -1,0 +1,71 @@
+add_sd_ruler <- function(plot, outcome_vector,
+                         x_anchor = NULL,
+                         y_anchor = NULL,
+                         segment_length = NULL,
+                         color = "red",
+                         digits = 2,
+                         x_max = NULL) {
+
+  # Compute SD and Mean
+  sd_val <- sd(outcome_vector, na.rm = TRUE)
+  mean_val <- mean(outcome_vector, na.rm = TRUE)
+
+  # Default segment length: 1 SD
+  if (is.null(segment_length)) {
+    segment_length <- sd_val
+  }
+
+  # Determine x anchor for legend
+  if (is.null(x_anchor)) {
+    if (!is.null(x_max)) {
+      x_anchor <- x_max - segment_length - 1
+    } else {
+      x_range <- range(outcome_vector, na.rm = TRUE)
+      x_anchor <- x_range[2] - segment_length
+    }
+  }
+
+  # Fixed y range and vertical anchor
+  y_range <- c(-0.8, 0.8)
+  if (is.null(y_anchor)) {
+    y_anchor <- y_range[1] + 0.2
+  }
+
+  # Text label and legend segment coordinates
+  segment_df <- tibble::tibble(
+    x = x_anchor,
+    xend = x_anchor + segment_length,
+    y = y_anchor,
+    yend = y_anchor
+  )
+
+  label_df <- tibble::tibble(
+    x = x_anchor + segment_length / 2,
+    y = y_anchor - 0.07,
+    label = paste0("SD = ", round(sd_val, digits))
+  )
+
+  # Central SD ruler (mean to mean+SD)
+  center_segment_df <- tibble::tibble(
+    x = mean_val,
+    xend = mean_val + segment_length,
+    y = mean(y_range),
+    yend = mean(y_range)
+  )
+
+  plot +
+    coord_cartesian(ylim = y_range) +
+    geom_segment(data = segment_df,
+                 mapping = aes(x = x, xend = xend, y = y, yend = yend),
+                 inherit.aes = FALSE,
+                 color = color, size = 1.5) +
+    geom_text(data = label_df,
+              mapping = aes(x = x, y = y, label = label),
+              inherit.aes = FALSE,
+              color = "#1a1a1a", size = 4,
+              fontface = "italic") +
+    geom_segment(data = center_segment_df,
+                 mapping = aes(x = x, xend = xend, y = y, yend = yend),
+                 inherit.aes = FALSE,
+                 color = color, size = 1.5)
+}
