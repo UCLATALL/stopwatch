@@ -92,6 +92,7 @@ The following additional parameters can be set and passed on with the data for e
     </tr>
   </tbody>
 </table>
+
 ## 2 Data Saved in Centralized Google Sheet
 
 Data from the stopwatch are save in a centralized Google sheet that holds data for many classes. Example code for importing data from the spreadsheet into R is shown in section 3, below. By filtering data, you can look at only data for your class, for yourself (i.e., a single user), or for everyone. 6 variables are posted to the Google sheet, for each trial, in this order: 
