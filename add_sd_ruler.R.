@@ -1,3 +1,6 @@
+# developed for the 6.4-6.6 overview notebook
+# see that notebook to see how to source and use this function
+
 add_sd_ruler <- function(plot, outcome_vector,
                          x_anchor = NULL,
                          y_anchor = NULL,
