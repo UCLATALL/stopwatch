@@ -92,5 +92,22 @@ The following additional parameters can be set and passed on with the data for e
     </tr>
   </tbody>
 </table>
+## 2 Data Saved in Centralized Google Sheet
+
+Data from the stopwatch are save in a centralized Google sheet that holds data for many classes. Example code for importing data from the spreadsheet into R is shown in section 3, below. By filtering data, you can look at only data for your class, for yourself (i.e., a single user), or for everyone. 6 variables are posted to the Google sheet, for each trial, in this order: 
+
+- class_id - a unique ID supplied by the teacher)
+- user_id - typically the Jupyter ID generated in the notebook)
+- session_id - a unique ID that is generated each time the code is run)
+- date 
+- condition - can be any text string)
+- trial - the attempt number for a session)
+- time_sec
+
+### 2.1 Setting the data submission parameters
+
+The values of `class_id`, `condition`, and `user_id` are generally set somewhere in the student-facing notebook before the cell in which the stopwatch appears. They could be set at the top of the notebook (in the setup cell), or revised later in the notebook (e.g., if the teacher wants to include both conditions in a notebook). The other variables are set automatically by the app.
+
+## 3 A fully functioning Jupyter notebook with examples is included in this repository
 
 
