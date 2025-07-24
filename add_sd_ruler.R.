@@ -1,32 +1,39 @@
-add_sd_ruler <- function(p, outcome, legend_x = NULL, legend_y = NULL) {
-  outcome_vals <- eval(substitute(outcome), p$data)
+add_sd_ruler <- function(plot, outcome, legend_x = NULL, legend_y = NULL) {
+  outcome_quo <- rlang::enquo(outcome)
+
+  # Try to evaluate from plot$data; fall back to global env
+  outcome_vals <- tryCatch(
+    rlang::eval_tidy(outcome_quo, data = plot$data),
+    error = function(e) rlang::eval_tidy(outcome_quo, data = rlang::caller_env())
+  )
+
   m <- mean(outcome_vals, na.rm = TRUE)
   sd_val <- sd(outcome_vals, na.rm = TRUE)
 
-  # Add SD segment
+  # SD segment from mean to mean + SD, at y = 0
   segment_df <- data.frame(x = m, xend = m + sd_val, y = 0, yend = 0)
-  p <- p +
+  plot <- plot +
     geom_segment(data = segment_df,
                  aes(x = x, xend = xend, y = y, yend = yend),
                  inherit.aes = FALSE,
                  color = "red", linewidth = 2)
 
-  # Add red text with red outline using geom_label
+  # Optional legend
   if (!is.null(legend_x) && !is.null(legend_y)) {
     label_df <- data.frame(x = legend_x, y = legend_y,
                            label = paste0("SD = ", round(sd_val, 2)))
-    p <- p +
+    plot <- plot +
       geom_label(data = label_df,
                  aes(x = x, y = y, label = label),
                  inherit.aes = FALSE,
-                 color = "red",           # text color
-                 fill = NA,               # transparent background
-                 label.size = 0.8,        # thickness of the border
-                 label.r = unit(0.15, "lines"),  # rounded corners
+                 color = "red",
+                 fill = NA,
+                 label.size = 0.8,
+                 label.r = unit(0.15, "lines"),
                  label.padding = unit(0.4, "lines"),
                  fontface = "bold",
                  size = 5)
   }
 
-  return(p)
+  return(plot)
 }
