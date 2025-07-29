@@ -2,33 +2,53 @@ add_sd_ruler <- function(plot, outcome,
                          legend_x = NULL, legend_y = NULL, 
                          ruler = "show", 
                          legend = "show") {
-  # Capture the outcome variable (unquoted)
   outcome_quo <- rlang::enquo(outcome)
 
-  # Try to evaluate outcome inside plot$data, otherwise fall back to global env
+  # Try to evaluate outcome inside plot$data, otherwise from global env
   outcome_vals <- tryCatch(
     rlang::eval_tidy(outcome_quo, data = plot$data),
     error = function(e) rlang::eval_tidy(outcome_quo, data = rlang::caller_env())
   )
 
-  # Compute mean and standard deviation of outcome
   m <- mean(outcome_vals, na.rm = TRUE)
   sd_val <- sd(outcome_vals, na.rm = TRUE)
 
-  # If ruler = "show", draw SD segment from mean to mean + 1 SD at y = 0
-  if (ruler == "show") {
-    segment_df <- data.frame(x = m, xend = m + sd_val, y = 0, yend = 0)
-    plot <- plot +
-      geom_segment(data = segment_df,
-                   aes(x = x, xend = xend, y = y, yend = yend),
-                   inherit.aes = FALSE,
-                   color = "red", linewidth = 2)
+  mapping <- plot$mapping
+  outcome_name <- rlang::as_name(outcome_quo)
+
+  # Determine if outcome is mapped to x or y
+  is_x <- tryCatch(rlang::as_name(mapping$x) == outcome_name, error = function(e) FALSE)
+  is_y <- tryCatch(rlang::as_name(mapping$y) == outcome_name, error = function(e) FALSE)
+
+  # Fallback if uncertain
+  if (!is_x && !is_y) {
+    warning("Could not determine if outcome is on x or y axis. Assuming y-axis.")
+    is_y <- TRUE
   }
 
-  # If legend = "show" and coordinates are provided, add SD label
+  # Add SD ruler segment
+  if (ruler == "show") {
+    if (is_x) {
+      segment_df <- data.frame(x = m, xend = m + sd_val, y = 0, yend = 0)
+      plot <- plot +
+        geom_segment(data = segment_df,
+                     aes(x = x, xend = xend, y = y, yend = yend),
+                     inherit.aes = FALSE,
+                     color = "red", linewidth = 2)
+    } else {
+      segment_df <- data.frame(x = 0, xend = 0, y = m, yend = m + sd_val)
+      plot <- plot +
+        geom_segment(data = segment_df,
+                     aes(x = x, xend = xend, y = y, yend = yend),
+                     inherit.aes = FALSE,
+                     color = "red", linewidth = 2)
+    }
+  }
+
+  # Add SD legend if requested
   if (legend == "show" && !is.null(legend_x) && !is.null(legend_y)) {
     label_df <- data.frame(
-      x = legend_x, 
+      x = legend_x,
       y = legend_y,
       label = paste0("SD = ", round(sd_val, 2))
     )
