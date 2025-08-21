@@ -15,8 +15,9 @@
 #' @examples
 #' gf_point(Thumb ~ Height, data = Fingers) %>%
 #'   gf_model(Height_model) %>%
-#'   gf_squaresid(Height_model, color = "blue", alpha = 0.5)
-gf_squaresid <- function(plot, model, aspect = 4/6, alpha = 0.1, ...) {
+#'   gf_square_resid(Height_model, color = "blue", alpha = 0.5)
+
+gf_square_resid <- function(plot, model, aspect = 4/6, alpha = 0.1, ...) {
   # Handles random jitter
   rand_int <- sample(1:100, 1)
   set.seed(rand_int)
@@ -55,6 +56,9 @@ gf_squaresid <- function(plot, model, aspect = 4/6, alpha = 0.1, ...) {
       id = i  # Unique identifier for each square
     )
   }))
+
+  # Alias
+  gf_squaresid <- gf_square_resid
 
   # Ensures same jitter as the x and y coord from plot
   set.seed(rand_int)
