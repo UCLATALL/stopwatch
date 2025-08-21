@@ -57,9 +57,6 @@ gf_square_resid <- function(plot, model, aspect = 4/6, alpha = 0.1, ...) {
     )
   }))
 
-  # Alias
-  gf_squaresid <- gf_square_resid
-
   # Ensures same jitter as the x and y coord from plot
   set.seed(rand_int)
   plot +
@@ -71,4 +68,5 @@ gf_square_resid <- function(plot, model, aspect = 4/6, alpha = 0.1, ...) {
       ...
     )
 }
-
+# Define alias
+gf_squaresid <- gf_square_resid
